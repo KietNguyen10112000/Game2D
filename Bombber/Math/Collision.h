@@ -1,5 +1,10 @@
 #pragma once
 #include <cmath>
+
+//#include <algorithm>
+
+#include <minmax.h>
+
 #include <DirectXCollision.h>
 
 #include "Math.h"
@@ -8,6 +13,20 @@ namespace Math
 {
 
 #define IsFloatEqual(f1, f2, epsilon) (std::abs(f1 - f2) < epsilon)
+
+
+inline bool Point2DInTriangle(const Vec2& p, const Vec2& p0, const Vec2& p1, const Vec2& p2)
+{
+	auto s = (p0.x - p2.x) * (p.y - p2.y) - (p0.y - p2.y) * (p.x - p2.x);
+	auto t = (p1.x - p0.x) * (p.y - p0.y) - (p1.y - p0.y) * (p.x - p0.x);
+
+	if ((s < 0) != (t < 0) && s != 0 && t != 0)
+		return false;
+
+	auto d = (p2.x - p1.x) * (p.y - p1.y) - (p2.y - p1.y) * (p.x - p1.x);
+
+	return d == 0 || (d < 0) == (s + t <= 0);
+}
 
 //typedef Vec4 Plane3D;
 
@@ -219,22 +238,127 @@ public:
 class Rect2D
 {
 public:
-	float m_x = 0;
-	float m_y = 0;
-	float m_w = 0;
-	float m_h = 0;
+	//Vec2 m_topLeft;
+	//Vec2 m_bottomRight;
+
+	//     vec1
+	//o----------->
+	//|
+	//vec2
+	//|
+	//V
+	Vec2 m_point;
+	Vec2 m_vec1;
+	Vec2 m_vec2;
 
 public:
+	inline Rect2D() {};
 	inline Rect2D(float x, float y, float w, float h)
 	{
-		m_x = x;
-		m_y = y;
-		m_w = w;
-		m_h = h;
+		//m_topLeft = { x,y };
+		//m_bottomRight = { x + w, y + h };
+		m_point = { x,y };
+		m_vec1 = { w, 0 };
+		m_vec2 = { 0, h };
 	}
 
+public:
+	inline auto Width() const { return m_vec1.Length(); }
+	inline auto Height() const { return m_vec2.Length(); }
+	inline auto Center() const { return m_point + (m_vec1 + m_vec2) / 2.0f; }
+	inline auto Diagonal() const { return m_vec1 + m_vec2; }
+
+	inline auto Area() const { return m_vec1.Length() * m_vec2.Length(); }
+
+	//"can" but not sure
+	inline bool CanOverlap(const Rect2D& rect) const
+	{
+		const Rect2D* rect1 = this;
+		const Rect2D* rect2 = &rect;
+
+		auto p1 = rect1->m_point;
+		auto p2 = rect1->m_point + rect1->m_vec1;
+		auto p3 = rect1->m_point + rect1->m_vec2;
+		auto p4 = p3 + rect1->m_vec1;
+
+		auto _p1 = rect2->m_point;
+		auto _p2 = rect2->m_point + rect2->m_vec1;
+		auto _p3 = rect2->m_point + rect2->m_vec2;
+		auto _p4 = _p3 + rect2->m_vec1;
+
+		auto rectALeft = min(min(min(p1.x, p2.x), p3.x), p4.x);
+		auto rectARight = max(max(max(p1.x, p2.x), p3.x), p4.x);
+		auto rectATop = min(min(min(p1.y, p2.y), p3.y), p4.y);
+		auto rectABottom = max(max(max(p1.y, p2.y), p3.y), p4.y);
+
+		auto rectBLeft = min(min(min(_p1.x, _p2.x), _p3.x), _p4.x);
+		auto rectBRight = max(max(max(_p1.x, _p2.x), _p3.x), _p4.x);
+		auto rectBTop = min(min(min(_p1.y, _p2.y), _p3.y), _p4.y);
+		auto rectBBottom = max(max(max(_p1.y, _p2.y), _p3.y), _p4.y);
+
+		return rectALeft < rectBRight && rectARight > rectBLeft &&
+			rectATop < rectBBottom && rectABottom > rectBTop;
+	}
+
+	inline bool IsOverlap(const Rect2D& rect) const
+	{
+		auto area1 = Area();
+		auto area2 = rect.Area();
+
+		const Rect2D* rect1 = 0;
+		const Rect2D* rect2 = 0;
+
+		if (area1 > area2)
+		{
+			rect1 = &rect;
+			rect2 = this;
+		}
+		else
+		{
+			rect2 = &rect;
+			rect1 = this;
+		}
+
+		auto p1 = rect1->m_point;
+		auto p2 = rect1->m_point + rect1->m_vec1;
+		auto p3 = rect1->m_point + rect1->m_vec2;
+		auto p4 = p3 + rect1->m_vec1;
+
+		auto _p1 = rect2->m_point;
+		auto _p2 = rect2->m_point + rect2->m_vec1;
+		auto _p3 = rect2->m_point + rect2->m_vec2;
+		auto _p4 = _p3 + rect2->m_vec1;
+
+		return Point2DInTriangle(p1, _p1, _p2, _p3) || Point2DInTriangle(p2, _p1, _p2, _p3) 
+			|| Point2DInTriangle(p3, _p1, _p2, _p3) || Point2DInTriangle(p4, _p1, _p2, _p3)
+			|| Point2DInTriangle(p1, _p4, _p2, _p3) || Point2DInTriangle(p2, _p4, _p2, _p3)
+			|| Point2DInTriangle(p3, _p4, _p2, _p3) || Point2DInTriangle(p4, _p4, _p2, _p3);
+	}
+
+	//self rotation
+	void Rotate(float radAngle)
+	{
+		Vec2 pivot = Center();
+
+		auto cosAngle = cos(radAngle);
+		auto sinAngle = sin(radAngle);
+
+		float rX = pivot.x + (m_point.x - pivot.x) * cosAngle - (m_point.y - pivot.y) * sinAngle;
+		float rY = pivot.y + (m_point.x - pivot.x) * sinAngle + (m_point.y - pivot.y) * cosAngle;
+
+		m_point = { rX,rY };
+
+		rX = (m_vec1.x) * cosAngle - (m_vec1.y) * sinAngle;
+		rY = (m_vec1.x) * sinAngle + (m_vec1.y) * cosAngle;
+
+		m_vec1 = { rX,rY };
+
+		rX = (m_vec2.x) * cosAngle - (m_vec2.y) * sinAngle;
+		rY = (m_vec2.x) * sinAngle + (m_vec2.y) * cosAngle;
+
+		m_vec2 = { rX,rY };
+	}
 
 };
-
 
 };

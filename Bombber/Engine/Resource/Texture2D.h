@@ -2,8 +2,8 @@
 
 #include <Engine/IResource.h>
 
-#include <SDL.h>
-#include <SDL_image.h>
+//#include <SDL.h>
+//#include <SDL_image.h>
 
 class Texture2D : public IResource
 {

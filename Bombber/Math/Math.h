@@ -25,7 +25,47 @@ namespace Math
 	//typedef XMFLOAT3X3 Mat3x3;
 	//typedef XMFLOAT4 Vec4;
 	//typedef XMFLOAT3 Vec3;
-	typedef XMFLOAT2 Vec2;
+	//typedef XMFLOAT2 Vec2;
+
+	class Vec2 : public XMFLOAT2
+	{
+	public:
+		Vec2() : XMFLOAT2() {};
+		Vec2(float x, float y) : XMFLOAT2(x, y) {};
+
+		inline bool operator==(const Vec2& vec)
+		{
+			return vec.x == x && vec.y == y;
+		}
+
+		inline Vec2& Normalize()
+		{
+			XMStoreFloat2(this, XMVector2Normalize(XMLoadFloat2(this)));
+			return *this;
+		}
+
+		inline Vec2 Normal() const noexcept
+		{
+			Vec2 ret;
+			XMStoreFloat2(&ret, XMVector2Normalize(XMLoadFloat2(this)));
+			return ret;
+		}
+
+		inline float Length() const
+		{
+			return sqrt(x * x + y * y);
+		}
+
+		inline std::string ToString() const
+		{
+			std::string ret = "Vec2("
+				+ std::to_string(x)
+				+ ", " + std::to_string(y) + ")";
+
+			return ret;
+		};
+
+	};
 
 	template<typename T>
 	inline Vec2 operator*(const Vec2& vec, T i)
@@ -42,6 +82,24 @@ namespace Math
 		Vec2 re;
 		re.x = vec.x * i;
 		re.y = vec.y * i;
+		return re;
+	}
+
+	template<typename T>
+	inline Vec2 operator/(T i, const Vec2& vec)
+	{
+		Vec2 re;
+		re.x = i / vec.x;
+		re.y = i / vec.y;
+		return re;
+	}
+
+	template<typename T>
+	inline Vec2 operator/(const Vec2& vec, T i)
+	{
+		Vec2 re;
+		re.x = vec.x / i;
+		re.y = vec.y / i;
 		return re;
 	}
 

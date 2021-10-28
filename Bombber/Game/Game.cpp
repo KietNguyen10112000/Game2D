@@ -7,6 +7,10 @@
 
 #include <Engine/Polygon.h>
 
+#include "Global.h"
+
+#include "Example.h"
+
 Animator2DSingleTexture* animator = 0;
 Animator2DMultiTexture* animator2 = 0;
 
@@ -14,8 +18,15 @@ class Polygon* polygon = 0;
 
 Texture2D* texture = 0;
 
+RectObject* obj = 0;
+RectObject* ground = 0;
+
 Game::Game() : Engine(L"Bombber", 1280, 720)
 {
+	GameGlobal::game = this;
+
+	m_camRect = { 0,0,1280,720 };
+
 	animator = new Animator2DSingleTexture();
 	animator->AddAnimation({
 		L"../../../../Bombber/Assets/foo.png",
@@ -51,12 +62,22 @@ Game::Game() : Engine(L"Bombber", 1280, 720)
 
 
 	polygon = new class Polygon();
-	polygon->PushVertex({ 0,0 }, { 1,0,0,1 }, {0,0});
+	polygon->PushVertex({ 0,128 }, { 1,0,0,1 }, {0,0});
 	polygon->PushVertex({ 0,256 }, { 0,1,1,1 }, {0,1});
 	polygon->PushVertex({ 256,0 }, { 1,1,0,1 }, {1,0});
 	polygon->PushVertex({ 256,256 }, { 1,0,1,1 }, {1,1});
 
 	texture = Resource::Get<Texture2D>(L"../../../../Bombber/Assets/foo.png");
+
+	obj = new RectObject(512, 256, 50, 50);
+	obj->SetTransform({ 512,256 }, PI / 3.0f);
+
+	ground = new RectObject(0, 600, 3000, 20);
+	ground->SetPhysicType(Object2D::STATIC);
+	ground->_Update(this);
+	ground->GetSprite().SetTexture(L"../../../../Bombber/Assets/copper.png");
+
+	_TIMING_;
 }
 
 Game::~Game()
@@ -76,6 +97,10 @@ void Game::Update()
 	animator->Play(this);
 	animator2->Play(this);
 
+	m_world.Update(this);
+
+	obj->_Update(this);
+
 	//render
 	Render();
 }
@@ -85,18 +110,26 @@ void Game::Render()
 	const float rgba[] = { 0,0.5,0.5,1 };
 	Renderer()->ClearFrame(rgba);
 
+	m_world.Render(this);
+
 	auto texture = animator->GetRenderTexture();
 	auto rect = animator->GetRenderRect();
-	Renderer()->Draw(texture, 1, 0, {}, 0, { 0,0,rect->m_w,rect->m_h }, *rect);
+	Renderer()->Draw(texture, 1, 0, {}, 0, { 0,0,rect->Width(),rect->Height() }, *rect);
 
 	texture = animator2->GetRenderTexture();
 	rect = animator2->GetRenderRect();
 
 	static float a = 0;
-	a += (PI / 3) * FDeltaTime();
-	Renderer()->Draw(texture, 1, a, {256,256}, 0, { 256,0,rect->m_w,rect->m_h }, *rect);
+	a += (PI / 10) * FDeltaTime();
+
+	//Rect2D screenRect = { 256,0,rect->Width(),rect->Height() };
+	//Renderer()->Draw(texture, 1, a, screenRect.Center(), 0, screenRect, *rect);
+	Render(animator2, { 256,256 }, a, { 1,1 }, 0);
 
 	Renderer()->DrawPolygon(texture, 0.1, 0, {}, 0, polygon);
+
+	obj->Render(this);
+	ground->Render(this);
 
 	Renderer()->Present();
 }

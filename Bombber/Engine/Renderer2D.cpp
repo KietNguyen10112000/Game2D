@@ -29,7 +29,8 @@ Renderer2D::Renderer2D(Window* window)
 		"../../../../Bombber/Engine/RenderAPI/OpenGL/GLSL/Polygon.fs");
 #else
 	//m_polygonShader = LoadShaders("", "");
-	static_assert(0);
+	m_polygonShader = LoadShaders("GLSL/Polygon.vs",
+		"GLSL/Polygon.fs");
 #endif // DEBUG
 
 	m_shaderPolygonTransformLocation = glGetUniformLocation(m_polygonShader, "transform");
@@ -189,8 +190,21 @@ void Renderer2D::Draw(Texture2D* texture, float alpha, double angle, const Vec2&
 void Renderer2D::Draw(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip, 
 	const Rect2D& screenRect, const Rect2D& textureRect)
 {
-	Draw(texture, alpha, angle, point, flip, screenRect.m_x, screenRect.m_y, screenRect.m_w, screenRect.m_h,
-		textureRect.m_x, textureRect.m_y, textureRect.m_w, textureRect.m_h);
+	/*Draw(texture, alpha, angle, point, flip, 
+		screenRect.m_topLeft.x, screenRect.m_topLeft.y, 
+		screenRect.m_bottomRight.x - screenRect.m_topLeft.x, 
+		screenRect.m_bottomRight.y - screenRect.m_topLeft.y,
+		textureRect.m_topLeft.x, textureRect.m_topLeft.y,
+		textureRect.m_bottomRight.x - textureRect.m_topLeft.x,
+		textureRect.m_bottomRight.y - textureRect.m_topLeft.y);*/
+
+	Draw(texture, alpha, angle, point, flip,
+		screenRect.m_point.x, screenRect.m_point.y,
+		screenRect.Width(),
+		screenRect.Height(),
+		textureRect.m_point.x, textureRect.m_point.y,
+		textureRect.Width(),
+		textureRect.Height());
 }
 
 void Renderer2D::DrawPolygon(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip, 
