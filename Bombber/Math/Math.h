@@ -898,19 +898,15 @@ namespace Math
 
 		inline Mat3x3& SetTranslation(float x, float y)
 		{
-			XMStoreFloat3x3(this, XMMatrixTranslation(x, y, 0));
-			return *this;
-		}
-
-		inline Mat3x3& SetTranslation(Vec2& vec)
-		{
-			XMStoreFloat3x3(this, XMMatrixTranslation(vec.x, vec.y, 0));
+			_31 = x;
+			_32 = y;
 			return *this;
 		}
 
 		inline Mat3x3& SetTranslation(const Vec2& vec)
 		{
-			XMStoreFloat3x3(this, XMMatrixTranslation(vec.x, vec.y, 0));
+			m[2][0] = vec.x;
+			m[2][1] = vec.y;
 			return *this;
 		}
 

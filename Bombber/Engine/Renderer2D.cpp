@@ -37,6 +37,7 @@ Renderer2D::Renderer2D(Window* window)
 	m_shaderScreenDimensionsLocation = glGetUniformLocation(m_polygonShader, "screenDim");
 	m_shaderFsInfoLocation = glGetUniformLocation(m_polygonShader, "info");
 	m_shaderColorTextureLocation = glGetUniformLocation(m_polygonShader, "colorTexture");
+	m_shaderPolygonToWorldLocation = glGetUniformLocation(m_polygonShader, "polygonTransform");
 
 	int w = 0, h = 0;
 	SDL_GetWindowSize(m_window, &w, &h);
@@ -55,7 +56,7 @@ Renderer2D::Renderer2D(Window* window)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	m_polygon = new class Polygon();
+	m_polygon = new class Polygon(32);
 
 }
 
@@ -207,8 +208,70 @@ void Renderer2D::Draw(Texture2D* texture, float alpha, double angle, const Vec2&
 		textureRect.Height());
 }
 
+//void Renderer2D::DrawPolygon(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip, 
+//	class Polygon* polygon)
+//{
+//	//if (alpha <= 0) return;
+//
+//	//polygon->Update();
+//
+//	//auto vb = polygon->m_vb;
+//	//auto ib = polygon->m_ib;
+//
+//	//glUseProgram(m_polygonShader);
+//
+//	//glBindBuffer(GL_ARRAY_BUFFER, vb);
+//	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+//	//glEnableVertexAttribArray(0);
+//	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(2 * sizeof(float)));
+//	//glEnableVertexAttribArray(1);
+//	//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(4 * sizeof(float)));
+//	//glEnableVertexAttribArray(2);
+//
+//	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+//
+//	//glUniform4fv(m_shaderScreenDimensionsLocation, 1, &m_screenDimensions.x);
+//
+//	//if (angle != 0)
+//	//{
+//	//	m_polygonTransform.x = angle;
+//	//	m_polygonTransform.y = point.x;
+//	//	m_polygonTransform.z = point.y;
+//	//}
+//	//else
+//	//{
+//	//	m_polygonTransform.x = 0;
+//	//}
+//	//glUniform4fv(m_shaderPolygonTransformLocation, 1, &m_polygonTransform.x);
+//
+//	//if (texture)
+//	//{
+//	//	auto textureID = texture->GetNativeHandle();
+//	//	glActiveTexture(GL_TEXTURE0);
+//	//	glBindTexture(GL_TEXTURE_2D, textureID);
+//	//	glUniform1i(m_shaderColorTextureLocation, 0);
+//	//	m_fsInfo.x = 1;
+//	//}
+//	//else
+//	//{
+//	//	m_fsInfo.x = 0;
+//	//}
+//
+//	//m_fsInfo.y = (float)flip;
+//	//m_fsInfo.w = alpha;
+//	//glUniform4fv(m_shaderFsInfoLocation, 1, &m_fsInfo.x);
+//
+//	////render
+//	//glDrawElements(GL_TRIANGLES, polygon->GetIndicesCount(), GL_UNSIGNED_INT, 0);
+//
+//	//glDisableVertexAttribArray(0);
+//	//glDisableVertexAttribArray(1);
+//	//glDisableVertexAttribArray(2);
+//	DrawPolygon(texture, alpha, angle, point, flip, polygon, {});
+//}
+
 void Renderer2D::DrawPolygon(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip, 
-	class Polygon* polygon)
+	class Polygon* polygon, const Mat3x3& transform)
 {
 	if (alpha <= 0) return;
 
@@ -242,6 +305,8 @@ void Renderer2D::DrawPolygon(Texture2D* texture, float alpha, double angle, cons
 		m_polygonTransform.x = 0;
 	}
 	glUniform4fv(m_shaderPolygonTransformLocation, 1, &m_polygonTransform.x);
+
+	glUniformMatrix3fv(m_shaderPolygonToWorldLocation, 1, true, &transform.m[0][0]);
 
 	if (texture)
 	{

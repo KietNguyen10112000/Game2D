@@ -23,6 +23,11 @@ public:
 		Vec4 color;
 	};
 
+	enum PIVOT_TYPE
+	{
+		NONE_PIVOT = -1
+	};
+
 protected:
 	uint32_t m_vb = 0;
 	uint32_t m_ib = 0;
@@ -33,12 +38,20 @@ public:
 
 	bool m_needUpdate = 0;
 
+	long long m_pivotVertex = NONE_PIVOT;
+
 public:
 	Polygon(size_t capacity = MAX_VERTEX);
 	~Polygon();
 
 public:
 	void Update();
+
+	inline void SetVertexPivot(long long index)
+	{
+		//if (index < 0 || index >= m_vertices.size()) return;
+		m_pivotVertex = index;
+	}
 
 public:
 	inline void PushVertex(const Vec2& pos, const Vec4& color = {}, const Vec2& uv = {})
@@ -47,9 +60,18 @@ public:
 
 		if (size > 2)
 		{
-			m_indices.push_back(size - 2);
-			m_indices.push_back(size - 1);
-			m_indices.push_back(size);
+			if (m_pivotVertex == NONE_PIVOT)
+			{
+				m_indices.push_back(size - 2);
+				m_indices.push_back(size - 1);
+				m_indices.push_back(size);
+			}
+			else
+			{
+				m_indices.push_back(m_pivotVertex);
+				m_indices.push_back(size - 1);
+				m_indices.push_back(size);
+			}
 		}
 		else
 		{

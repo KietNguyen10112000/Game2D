@@ -10,7 +10,7 @@ Polygon::Polygon(size_t capacity)
 	capacity = std::min(capacity, (size_t)MAX_VERTEX);
 
 	m_vertices.reserve(capacity);
-	m_indices.reserve(capacity * 2  + 2);
+	m_indices.reserve(capacity * 3  + 2);
 
 	m_vertices.resize(1);
 	m_indices.resize(1);
@@ -21,7 +21,7 @@ Polygon::Polygon(size_t capacity)
 
 	glGenBuffers(1, &m_ib);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (capacity * 2 + 2) * sizeof(uint32_t), &m_indices[0], GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (capacity * 3 + 2) * sizeof(uint32_t), &m_indices[0], GL_DYNAMIC_DRAW);
 
 
 	m_vertices.clear();

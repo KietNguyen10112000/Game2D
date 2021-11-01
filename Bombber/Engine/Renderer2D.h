@@ -28,6 +28,9 @@ protected:
 
 	uint32_t m_shaderColorTextureLocation = 0;
 
+	Mat3x3 m_polygonToWorld;
+	uint32_t m_shaderPolygonToWorldLocation = 0;
+
 	//to render quad, triangle, line, ...
 	class Polygon* m_polygon = 0;
 
@@ -56,8 +59,11 @@ public:
 	void Draw(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip,
 		const Rect2D& screenRect, const Rect2D& textureRect);
 
+	//void DrawPolygon(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip,
+		//class Polygon* polygon);
+
 	void DrawPolygon(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip,
-		class Polygon* polygon);
+		class Polygon* polygon, const Mat3x3& transform = {});
 
 	void ClearFrame(const float* rgba);
 

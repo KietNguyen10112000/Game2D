@@ -21,8 +21,13 @@ Texture2D* texture = 0;
 RectObject* obj = 0;
 RectObject* ground = 0;
 
+PolygonObject* polygonObj = 0;
+CircleObject* circleObj = 0;
+
 Game::Game() : Engine(L"Bombber", 1280, 720)
 {
+	Random::Initialize();
+
 	GameGlobal::game = this;
 
 	m_camRect = { 0,0,1280,720 };
@@ -77,11 +82,17 @@ Game::Game() : Engine(L"Bombber", 1280, 720)
 	ground->_Update(this);
 	ground->GetSprite().SetTexture(L"../../../../Bombber/Assets/copper.png");
 
+
+	polygonObj = new PolygonObject();
+
+	circleObj = new CircleObject(512, 512, 30);
+
 	_TIMING_;
 }
 
 Game::~Game()
 {
+	Random::UnInitialize();
 }
 
 void Game::Update()
@@ -100,6 +111,7 @@ void Game::Update()
 	m_world.Update(this);
 
 	obj->_Update(this);
+	circleObj->_Update(this);
 
 	//render
 	Render();
@@ -126,10 +138,15 @@ void Game::Render()
 	//Renderer()->Draw(texture, 1, a, screenRect.Center(), 0, screenRect, *rect);
 	Render(animator2, { 256,256 }, a, { 1,1 }, 0);
 
-	Renderer()->DrawPolygon(texture, 0.1, 0, {}, 0, polygon);
+	Renderer()->DrawPolygon(0, 0.1, 0, {}, 0, polygon);
+
+	ground->Render(this);
+
+	polygonObj->Render(this);
+
+	circleObj->Render(this);
 
 	obj->Render(this);
-	ground->Render(this);
 
 	Renderer()->Present();
 }

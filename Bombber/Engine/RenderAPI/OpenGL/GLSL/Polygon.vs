@@ -11,18 +11,20 @@ uniform vec4 screenDim;
 
 uniform vec4 transform;
 
+uniform mat3 polygonTransform;
+
 uniform vec4 info;
 
 void main()
 {
-    vec2 transformedPos = position;
+    vec2 transformedPos = (vec3(position, 1.0f) * polygonTransform).xy;
 
     if(transform[0] != 0)
     {
         //transform[0] is angle
         float radAngle = -transform[0];// "-" - clockwise
-        float _x = position.x;
-        float _y = position.y;
+        float _x = transformedPos.x;
+        float _y = transformedPos.y;
 
         vec2 pivot = vec2(transform[1], transform[2]);
 

@@ -10,6 +10,8 @@
 
 #include <Engine/Renderer2D.h>
 
+#include "Random.h"
+
 class Game : public Engine
 {
 public:
@@ -34,6 +36,7 @@ public:
 
 public:
 	inline auto& World() { return m_world; };
+	inline auto& CameraRect() { return m_camRect; };
 
 };
 

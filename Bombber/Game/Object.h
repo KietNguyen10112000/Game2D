@@ -16,7 +16,7 @@ class Object2D
 {
 public:
 	b2Body* m_body = 0;
-	b2PolygonShape m_shape;
+	//b2PolygonShape m_shape;
 
 	Vec2 m_position;
 	float m_angle = 0;
