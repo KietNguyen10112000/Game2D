@@ -22,7 +22,7 @@ void main()
     if(transform[0] != 0)
     {
         //transform[0] is angle
-        float radAngle = -transform[0];// "-" - clockwise
+        float radAngle = transform[0];// "-" - clockwise
         float _x = transformedPos.x;
         float _y = transformedPos.y;
 

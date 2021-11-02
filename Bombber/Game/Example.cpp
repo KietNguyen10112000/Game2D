@@ -238,6 +238,12 @@ CircleObject::~CircleObject()
 
 void CircleObject::Update(Game* game)
 {
+	if (game->Input()->GetPressKey(SPACE))
+	{
+		m_body->SetLinearVelocity({ 0.f,0.f });
+		SetTransform({ 512, 60 }, 0);
+	}
+
 	if (game->Input()->GetKey(RIGHT_ARROW))
 	{
 		m_body->ApplyForce({ 50.0f,0.f }, *(b2Vec2*)&((m_position) *World::PIXEL_PER_METERS), true);
