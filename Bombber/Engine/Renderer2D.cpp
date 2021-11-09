@@ -273,7 +273,7 @@ void Renderer2D::Draw(Texture2D* texture, float alpha, double angle, const Vec2&
 void Renderer2D::DrawPolygon(Texture2D* texture, float alpha, double angle, const Vec2& point, int flip, 
 	class Polygon* polygon, const Mat3x3& transform)
 {
-	if (alpha <= 0) return;
+	if (alpha < 0) return;
 
 	polygon->Update();
 

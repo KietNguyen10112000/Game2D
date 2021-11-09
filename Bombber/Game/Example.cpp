@@ -168,7 +168,10 @@ void PolygonObject::Update(Game* game)
 
 void PolygonObject::Render(Game* game)
 {
-	game->Renderer()->DrawPolygon(0, 1, 0, {}, 0, m_polygon);
+	auto& camRect = game->CameraRect();
+	Mat3x3 temp;
+	temp.SetPosition(m_position - camRect.m_point);
+	game->Renderer()->DrawPolygon(0, 1, 0, {}, 0, m_polygon, temp);
 }
 
 
@@ -253,11 +256,19 @@ void CircleObject::Update(Game* game)
 	{
 		m_body->ApplyForce({ -50.0f,0.f }, *(b2Vec2*)&(m_position * World::PIXEL_PER_METERS), true);
 	}
+
+	if (game->Input()->GetPressKey(UP_ARROW))
+	{
+		m_body->ApplyForce({ 0.0f,-1000.f }, *(b2Vec2*)&(m_position * World::PIXEL_PER_METERS), true);
+	}
 }
 
 void CircleObject::Render(Game* game)
 {
+	auto& camRect = game->CameraRect();
+
+	auto posInCam = m_position - camRect.m_point;
 	Mat3x3 temp;
-	temp.SetTranslation(m_position);
-	game->Renderer()->DrawPolygon(0, 1, m_angle, m_position, 0, m_polygon, temp);
+	temp.SetTranslation(posInCam);
+	game->Renderer()->DrawPolygon(0, 1, m_angle, posInCam, 0, m_polygon, temp);
 }

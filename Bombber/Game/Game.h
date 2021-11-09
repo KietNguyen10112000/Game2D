@@ -52,7 +52,7 @@ inline void Game::Render(T* target, const Vec2& position, const float angle, con
 	auto h = screenRect.Height() * scale.y;
 	auto pivot = position - m_camRect.m_point;
 
-	screenRect = Rect2D(pivot.x, pivot.y, w, h);
+	screenRect = Rect2D(position.x, position.y, w, h);
 
 	if (angle != 0)
 	{

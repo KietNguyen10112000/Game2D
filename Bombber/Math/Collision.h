@@ -286,18 +286,23 @@ public:
 		auto _p3 = rect2->m_point + rect2->m_vec2;
 		auto _p4 = _p3 + rect2->m_vec1;
 
-		auto rectALeft = min(min(min(p1.x, p2.x), p3.x), p4.x);
-		auto rectARight = max(max(max(p1.x, p2.x), p3.x), p4.x);
-		auto rectATop = min(min(min(p1.y, p2.y), p3.y), p4.y);
-		auto rectABottom = max(max(max(p1.y, p2.y), p3.y), p4.y);
+		auto rectALeft		=	min(min(min(p1.x, p2.x), p3.x), p4.x);
+		auto rectARight		=	max(max(max(p1.x, p2.x), p3.x), p4.x);
+		auto rectATop		=	min(min(min(p1.y, p2.y), p3.y), p4.y);
+		auto rectABottom	=	max(max(max(p1.y, p2.y), p3.y), p4.y);
 
-		auto rectBLeft = min(min(min(_p1.x, _p2.x), _p3.x), _p4.x);
-		auto rectBRight = max(max(max(_p1.x, _p2.x), _p3.x), _p4.x);
-		auto rectBTop = min(min(min(_p1.y, _p2.y), _p3.y), _p4.y);
-		auto rectBBottom = max(max(max(_p1.y, _p2.y), _p3.y), _p4.y);
+		auto rectBLeft		=	min(min(min(_p1.x, _p2.x), _p3.x), _p4.x);
+		auto rectBRight		=	max(max(max(_p1.x, _p2.x), _p3.x), _p4.x);
+		auto rectBTop		=	min(min(min(_p1.y, _p2.y), _p3.y), _p4.y);
+		auto rectBBottom	=	max(max(max(_p1.y, _p2.y), _p3.y), _p4.y);
 
-		return rectALeft < rectBRight && rectARight > rectBLeft &&
-			rectATop < rectBBottom && rectABottom > rectBTop;
+		if (rectALeft >= rectBRight || rectBLeft >= rectARight)
+			return false;
+
+		if (rectABottom <= rectBTop || rectBBottom <= rectATop)
+			return false;
+
+		return true;
 	}
 
 	inline bool IsOverlap(const Rect2D& rect) const

@@ -81,6 +81,8 @@ public:
 	inline bool IsMouseMove() { return (m_deltaMPos[0] != 0 || m_deltaMPos[1] != 0); };
 	inline short GetDeltaMouseHWheel() { return deltaMouseWheel; };
 
+	inline void UpdateLock();
+
 };
 
 inline bool Input::GetPressKey(unsigned char keyCode)
@@ -137,6 +139,27 @@ inline void Input::SetLockMouse(bool lock, int posX, int posY)
 	m_preMousePos[1] = posY;
 	m_deltaMPos[0] = 0;
 	m_deltaMPos[1] = 0;
+}
+
+inline void Input::UpdateLock()
+{
+	if (m_lockMouse)
+	{
+		SetCursorPos(m_lockMousePosX, m_lockMousePosY);
+		m_deltaMPos[0] = curPoint->x - m_lockMousePosX;
+		m_deltaMPos[1] = curPoint->y - m_lockMousePosY;
+	}
+	else
+	{
+		m_preMousePos[0] = m_curMousePos[0];
+		m_preMousePos[1] = m_curMousePos[1];
+
+		m_curMousePos[0] = curPoint->x;
+		m_curMousePos[1] = curPoint->y;
+
+		m_deltaMPos[0] = m_curMousePos[0] - m_preMousePos[0];
+		m_deltaMPos[1] = m_curMousePos[1] - m_preMousePos[1];
+	}
 }
 
 inline void Input::LastUpdate()

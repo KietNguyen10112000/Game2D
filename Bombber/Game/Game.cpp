@@ -11,6 +11,8 @@
 
 #include "Example.h"
 
+#include "Camera.h"
+
 Animator2DSingleTexture* animator = 0;
 Animator2DMultiTexture* animator2 = 0;
 
@@ -24,6 +26,8 @@ RectObject* ground = 0;
 PolygonObject* polygonObj = 0;
 CircleObject* circleObj = 0;
 
+Camera* cam;
+
 Game::Game() : Engine(L"Bombber", 1280, 720)
 {
 	Random::Initialize();
@@ -31,6 +35,8 @@ Game::Game() : Engine(L"Bombber", 1280, 720)
 	GameGlobal::game = this;
 
 	m_camRect = { 0,0,1280,720 };
+
+	cam = new Camera(this);
 
 	animator = new Animator2DSingleTexture();
 	animator->AddAnimation({
@@ -99,11 +105,7 @@ void Game::Update()
 {
 	_TIMING_;
 
-	////do update
-	//if (Input()->GetPressKey('W'))
-	//{
-	//	std::cout << animator->GetDuration() << "\n";
-	//}
+	cam->Update(this);
 
 	animator->Play(this);
 	animator2->Play(this);
@@ -126,7 +128,7 @@ void Game::Render()
 
 	auto texture = animator->GetRenderTexture();
 	auto rect = animator->GetRenderRect();
-	Renderer()->Draw(texture, 1, 0, {}, 0, { 0,0,rect->Width(),rect->Height() }, *rect);
+	Renderer()->Draw(texture, 1, 0, {}, 0, { 512,0,rect->Width(),rect->Height() }, *rect);
 
 	texture = animator2->GetRenderTexture();
 	rect = animator2->GetRenderRect();
@@ -138,7 +140,7 @@ void Game::Render()
 	//Renderer()->Draw(texture, 1, a, screenRect.Center(), 0, screenRect, *rect);
 	Render(animator2, { 256,256 }, a, { 1,1 }, 0);
 
-	Renderer()->DrawPolygon(0, 0.1, 0, {}, 0, polygon);
+	//Renderer()->DrawPolygon(0, 0.1, 0, {}, 0, polygon);
 
 	ground->Render(this);
 
@@ -147,6 +149,8 @@ void Game::Render()
 	circleObj->Render(this);
 
 	obj->Render(this);
+
+	cam->Render(this);
 
 	Renderer()->Present();
 }

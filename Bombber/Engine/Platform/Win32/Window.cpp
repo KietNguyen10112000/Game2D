@@ -194,6 +194,8 @@ Window::Window(const wchar_t* title, int& width, int& height, bool fullScreen)
     }
 
     m_input = new Input();
+
+    CalOffset();
 }
 
 Window::~Window()
@@ -203,6 +205,23 @@ Window::~Window()
     DestroyWindow(m_hwnd);
 
     delete m_input;
+}
+
+void Window::CalOffset()
+{
+    RECT rect;
+    GetWindowRect(m_hwnd, &rect);
+
+    m_x = rect.left;
+    m_y = rect.top;
+
+    m_width = rect.right - m_x;
+    m_height = rect.bottom - m_y;
+
+    GetClientRect(m_hwnd, &rect);
+
+    m_offsetX = (m_width - rect.right) / 2;
+    m_offsetY = (m_height - rect.bottom) - m_offsetX;
 }
 
 void Window::Loop()
@@ -224,6 +243,16 @@ void Window::Loop()
         else
         {
             m_input->FirstUpdate();
+
+            RECT rect;
+            GetWindowRect(m_hwnd, &rect);
+
+            m_x = rect.left + m_offsetX;
+            m_y = rect.top + m_offsetY;
+
+            m_width = rect.right - rect.left - m_offsetX * 2;
+            m_height = rect.bottom - rect.top - m_offsetY - m_offsetX;
+
             Update();
             m_input->LastUpdate();
         }
