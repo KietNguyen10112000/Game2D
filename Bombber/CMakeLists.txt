@@ -12,6 +12,8 @@ file(GLOB SOURCES1
     ${PROJECT_SOURCE_DIR}/Bombber/*/*.cpp
     ${PROJECT_SOURCE_DIR}/Bombber/*.cpp
     ${PROJECT_SOURCE_DIR}/Bombber/Engine/Resource/*.cpp
+
+    ${PROJECT_SOURCE_DIR}/Bombber/Game/Player/*.cpp
 )
 
 file(GLOB_RECURSE 

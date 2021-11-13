@@ -13,6 +13,8 @@
 
 #include "Camera.h"
 
+#include "Player/DefaultPlayer.h"
+
 Animator2DSingleTexture* animator = 0;
 Animator2DMultiTexture* animator2 = 0;
 
@@ -26,7 +28,9 @@ RectObject* ground = 0;
 PolygonObject* polygonObj = 0;
 CircleObject* circleObj = 0;
 
-Camera* cam;
+IPlayer* player = 0;
+
+PlayerUpdater playerUpdater;
 
 Game::Game() : Engine(L"Bombber", 1280, 720)
 {
@@ -36,20 +40,22 @@ Game::Game() : Engine(L"Bombber", 1280, 720)
 
 	m_camRect = { 0,0,1280,720 };
 
-	cam = new Camera(this);
-
 	animator = new Animator2DSingleTexture();
 	animator->AddAnimation({
-		L"../../../../Bombber/Assets/foo.png",
+		L"../../../../Bombber/Assets/char_red.png",
 		{
-			{ 0,		0,		64,		205 },
-			{ 64,		0,		64,		205 },
-			{ 128,		0,		64,		205 },
-			{ 196,		0,		64,		205 },
+			{128,0,128,128},
+			{256,0,128,128},
+			{384,0,128,128},
+			{512,0,128,128},
+			{640,0,128,128},
+			{768,0,128,128},
+			{896,0,128,128},
+			{1024,0,128,128},
 		}
 		});
 	animator->SetAnimation(0);
-	animator->SetDuration(0.5);
+	animator->SetDuration(1);
 
 
 	//init animator 2
@@ -83,7 +89,7 @@ Game::Game() : Engine(L"Bombber", 1280, 720)
 	obj = new RectObject(512, 256, 50, 50);
 	obj->SetTransform({ 512,256 }, PI / 3.0f);
 
-	ground = new RectObject(0, 600, 3000, 20);
+	ground = new RectObject(0, 600, 30000, 20);
 	ground->SetPhysicType(Object2D::STATIC);
 	ground->_Update(this);
 	ground->GetSprite().SetTexture(L"../../../../Bombber/Assets/copper.png");
@@ -92,6 +98,10 @@ Game::Game() : Engine(L"Bombber", 1280, 720)
 	polygonObj = new PolygonObject();
 
 	circleObj = new CircleObject(512, 512, 30);
+
+
+	//=============================================================================
+	player = new DefaultPlayer(this);
 
 	_TIMING_;
 }
@@ -105,7 +115,16 @@ void Game::Update()
 {
 	_TIMING_;
 
-	cam->Update(this);
+	/*if (Input()->GetPressKey(SPACE))
+	{
+		cam->FollowType() = Camera::FOLLOW_TYPE::LOCK_POSITION;
+		cam->Follow(&circleObj->m_position);
+	}
+
+	if (Input()->GetPressKey(ESC))
+	{
+		cam->Follow(0);
+	}*/
 
 	animator->Play(this);
 	animator2->Play(this);
@@ -114,6 +133,10 @@ void Game::Update()
 
 	obj->_Update(this);
 	circleObj->_Update(this);
+
+	playerUpdater.Update(this, player);
+
+	//cam->Update(this);
 
 	//render
 	Render();
@@ -128,7 +151,7 @@ void Game::Render()
 
 	auto texture = animator->GetRenderTexture();
 	auto rect = animator->GetRenderRect();
-	Renderer()->Draw(texture, 1, 0, {}, 0, { 512,0,rect->Width(),rect->Height() }, *rect);
+	Renderer()->Draw(texture, 0, 0, {}, 2, { 512,0,rect->Width(),rect->Height() }, *rect);
 
 	texture = animator2->GetRenderTexture();
 	rect = animator2->GetRenderRect();
@@ -150,7 +173,7 @@ void Game::Render()
 
 	obj->Render(this);
 
-	cam->Render(this);
+	player->Render(this);
 
 	Renderer()->Present();
 }

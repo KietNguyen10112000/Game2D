@@ -9,6 +9,7 @@ auto cur = GetTime();					\
 m_deltaTime = cur - m_currentTime;		\
 m_currentTime = cur;					\
 m_time += m_deltaTime / _TIME_FACTOR;	\
+m_input->deltaClickTimer += m_deltaTime;	\
 Sleep(2);								
 
 

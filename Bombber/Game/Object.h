@@ -42,6 +42,13 @@ public:
 		Update(game);
 	}
 
+	inline void RecvDataFromBox2d()
+	{
+		m_position = *(Vec2*)&m_body->GetPosition();
+		m_angle = m_body->GetAngle();
+		m_position = m_position / World::PIXEL_PER_METERS;
+	}
+
 public:
 	virtual void Update(Game* game) = 0;
 	virtual void Render(Game* game) = 0;
@@ -49,9 +56,10 @@ public:
 public:
 	inline virtual void SetTransform(const Vec2& position, float angle)
 	{
-		m_position = position * World::PIXEL_PER_METERS;
+		m_position = position;
+		auto temp = m_position * World::PIXEL_PER_METERS;
 		m_angle = angle;
-		m_body->SetTransform(*(b2Vec2*)&m_position, m_angle);
+		m_body->SetTransform(*(b2Vec2*)&temp, m_angle);
 		m_body->SetAwake(true);
 	}
 

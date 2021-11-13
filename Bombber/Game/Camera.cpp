@@ -3,6 +3,8 @@
 
 Camera::Camera(Game* game)
 {
+	m_camRect = &game->m_camRect;
+
 	Update(game);
 
 	//game->Input()->SetHideCursor(true);
@@ -14,10 +16,24 @@ Camera::Camera(Game* game)
 	//game->Input()->SetLockMouse(0, posX + m_windowPosX, posY + m_windowPosY);
 }
 
+float crossAimAngle = 0, scale = PI;
+
 void Camera::Update(Game* game)
 {
 	HandleMouse(game);
 	HandleCamera(game);
+
+	if (game->Input()->GetMouseButton(LEFT))
+	{
+		crossAimAngle += (PI * 1.5f) * game->FDeltaTime();
+
+		scale += (PI * 1.5f) * game->FDeltaTime();
+	}
+	else
+	{
+		crossAimAngle = 0;
+		scale = PI;
+	}
 }
 
 
@@ -88,38 +104,129 @@ void Camera::HandleMouse(Game* game)
 
 void Camera::ClampCamera(Rect2D& camRect)
 {
-	const float minX = 0, maxX = 0;
-	const float minY = 0, maxY = 0;
+	auto& camTopLeft = camRect.m_point;
+
+	auto camDiagonal = camRect.Diagonal();
+
+	auto camBottomRight = camTopLeft + camDiagonal;
+	auto bottomRightX = min(camBottomRight.x, m_camLimitBottomRight.x);
+	auto bottomRightY = min(camBottomRight.y, m_camLimitBottomRight.y);
+
+	auto newTopLeft = Vec2(bottomRightX, bottomRightY) - camDiagonal;
+
+	auto topLeftX = max(newTopLeft.x, m_camLimitTopLeft.x);
+	auto topLeftY = max(newTopLeft.y, m_camLimitTopLeft.y);
+
+	camTopLeft = { topLeftX, topLeftY };
 
 
 }
 
-#define Lerp(x,y,s) (y - x) * s
+#define Lerp(x,y,s) (y*s + x*(1-s))
 
 void Camera::HandleCamera(Game* game)
 {
-	const float minSpeed = 0;
-	const float maxSpeed = 100;
+	if (m_targetPosition)
+	{
+		m_camRect->m_point = *m_targetPosition - m_followOffset;
+	}
+	else
+	{
+		switch (m_speedAcceType)
+		{
+		case Camera::LINEAR:
+			HandleCameraLinear(game);
+			break;
+		case Camera::EXPONENT:
+			HandleCameraExp(game);
+			break;
+		default:
+			break;
+		}
+	}
+	
+	auto& camRect = game->CameraRect();
+	ClampCamera(camRect);
+}
+
+void Camera::HandleCameraLinear(Game* game)
+{
+	const float minSpeed = m_speedLowerBound;
+	const float maxSpeed = m_speedUpperBound;
 
 	const float halfW = m_windowWidth / 2;
 	const float halfH = m_windowHeight / 2;
 
-	const float vecX = m_preMousePosX - halfW;
-	const float vecY = m_preMousePosY - halfH;
+	float vecX = m_preMousePosX - halfW;
+	float vecY = m_preMousePosY - halfH;
 
-	//just do lerp()
+	//just do exp lerp()
 	const float sX = vecX / halfW;
 	const float sY = vecY / halfH;
 
-	const float speedX = Lerp(minSpeed, maxSpeed, sX) * game->FDeltaTime();
-	const float speedY = Lerp(minSpeed, maxSpeed, sY) * game->FDeltaTime();
+	const float speedX = Lerp(minSpeed, maxSpeed, std::abs(sX)) * game->FDeltaTime();
+	const float speedY = Lerp(minSpeed, maxSpeed, std::abs(sY)) * game->FDeltaTime();
+
+	vecX = (vecX != 0 && vecX > 0) ? 1 : -1;
+	vecY = (vecY != 0 && vecY > 0) ? 1 : -1;
+
+	auto vecSpeed = Vec2(vecX, vecY) * Vec2(speedX, speedY);
 
 	auto& camRect = game->CameraRect();
-	//camRect.m_point = camRect.m_point + Vec2(50  * game->FDeltaTime(), 0);
-	camRect.m_point = camRect.m_point + Vec2(speedX, speedY);
+	camRect.m_point = camRect.m_point + vecSpeed;
+}
 
-	ClampCamera(camRect);
+void Camera::HandleCameraExp(Game* game)
+{
+	const float minSpeed = m_speedLowerBound;
+	const float maxSpeed = m_speedUpperBound;
 
+	const float halfW = m_windowWidth / 2;
+	const float halfH = m_windowHeight / 2;
+
+	float vecX = m_preMousePosX - halfW;
+	float vecY = m_preMousePosY - halfH;
+
+	//just do exp lerp()
+	const float sX = vecX / halfW;
+	const float sY = vecY / halfH;
+
+	const float speedX = std::exp(Lerp(minSpeed, maxSpeed, std::abs(sX))) * game->FDeltaTime();
+	const float speedY = std::exp(Lerp(minSpeed, maxSpeed, std::abs(sY))) * game->FDeltaTime();
+
+	vecX = (vecX != 0 && vecX > 0) ? 1 : -1;
+	vecY = (vecY != 0 && vecY > 0) ? 1 : -1;
+
+	auto vecSpeed = Vec2(vecX, vecY) * Vec2(speedX, speedY);
+
+	auto& camRect = game->CameraRect();
+	camRect.m_point = camRect.m_point + vecSpeed;
+}
+
+void Camera::HandleFollow(Game* game)
+{
+	m_camRect->m_point = *m_targetPosition - m_followOffset;
+}
+
+void Camera::Follow(Vec2* position)
+{
+	m_targetPosition = position;
+
+	if (position)
+	{
+		switch (m_followType)
+		{
+		case Camera::CENTER:
+			m_followOffset = { m_windowWidth / 2.0f,m_windowHeight / 2.0f };
+			break;
+		case Camera::LOCK_POSITION:
+			m_followOffset = *m_targetPosition - m_camRect->m_point;
+			break;
+		default:
+			break;
+		}
+	}
+	
 }
 
 
@@ -130,8 +237,9 @@ void Camera::Render(Game* game)
 	auto rect = m_sprite.GetRenderRect();
 	auto texture = m_sprite.GetRenderTexture();
 
-	const float crossAimW = 100;
-	const float crossAimH = 100;
+	auto _scale = (std::cos(scale) / 2.0f + 2);
+	const float crossAimW = 100 * _scale;
+	const float crossAimH = 100 * _scale;
 
 	Rect2D screenRect = {
 		(float)m_preMousePosX - crossAimW / 2.0f, 
@@ -140,5 +248,5 @@ void Camera::Render(Game* game)
 		crossAimH 
 	};
 
-	renderer->Draw(texture, 0, 0, {}, 0, screenRect, *rect);
+	renderer->Draw(texture, 0, crossAimAngle, { (float)m_preMousePosX,(float)m_preMousePosY }, 0, screenRect, *rect);
 }

@@ -37,7 +37,7 @@ private:
 	inline static MOUSE_BUTTON doubleClick = NONE;
 	inline static MOUSE_BUTTON click = NONE;
 	inline static short deltaMouseWheel = 0;
-	inline static float deltaClickTimer = 0;
+	
 
 private:
 	LPPOINT curPoint = new tagPOINT();
@@ -58,6 +58,7 @@ public:
 	inline ~Input() {};
 
 public:
+	inline static float deltaClickTimer = 0;
 	inline static float deltaClickTime = 0;
 
 public:

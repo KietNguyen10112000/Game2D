@@ -127,6 +127,13 @@ namespace Math
 		return re;
 	}
 
+	inline float DotProduct(const Vec2& v1, const Vec2& v2)
+	{
+		float re;
+		XMStoreFloat(&re, XMVector2Dot(XMLoadFloat2(&v1), XMLoadFloat2(&v2)));
+		return re;
+	}
+
 	class Vec3 : public XMFLOAT3
 	{
 	public:

@@ -46,11 +46,11 @@ void main()
 
     if (info[1] == 1)
     {
-        ourUV.y = 1.0f - ourUV.y;
+        ourUV.x = 2 * info[2] - ourUV.x;
     }
     else if(info[1] == 2)
     {
-        ourUV.x = 1.0f - ourUV.x;
+        ourUV.y = 2 * info[2] - ourUV.y;
     }
 
     //x = ourUV.x;

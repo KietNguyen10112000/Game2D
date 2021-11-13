@@ -261,6 +261,7 @@ void CircleObject::Update(Game* game)
 	{
 		m_body->ApplyForce({ 0.0f,-1000.f }, *(b2Vec2*)&(m_position * World::PIXEL_PER_METERS), true);
 	}
+
 }
 
 void CircleObject::Render(Game* game)

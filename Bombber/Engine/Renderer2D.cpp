@@ -178,6 +178,15 @@ void Renderer2D::Draw(Texture2D* texture, float alpha, double angle, const Vec2&
 	m_polygon->PushVertex({ x + w	, y },			{},		{ imgx + duvx,imgy });
 	m_polygon->PushVertex({ x + w	, y + h },		{},		{ imgx + duvx,imgy + duvy });
 
+	if (flip == 1)
+	{
+		m_fsInfo.z = imgx + duvx / 2.0f;
+	}
+	else if (flip == 2)
+	{
+		m_fsInfo.z = imgy + duvy / 2.0f;
+	}
+
 	DrawPolygon(texture, alpha, angle, point, flip, m_polygon);
 }
 

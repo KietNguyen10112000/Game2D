@@ -62,6 +62,6 @@ inline void Game::Render(T* target, const Vec2& position, const float angle, con
 	if (screenRect.CanOverlap(m_camRect))
 	{
 		screenRect = Rect2D(pivot.x, pivot.y, w, h);
-		Renderer()->Draw(texture, 1, angle, screenRect.Center(), flip, screenRect, *rect);
+		Renderer()->Draw(texture, 0, angle, screenRect.Center(), flip, screenRect, *rect);
 	}
 }
